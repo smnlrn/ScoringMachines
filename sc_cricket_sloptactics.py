@@ -1,19 +1,17 @@
 import pygame
 import numpy as np
 import platform
-#import math as m
-#import epd7in5
-#from PIL import Image
+import sm_cricket_sloptactics_param as smp
 
 pygame.init()
 # size of the e-ink 7.5-inch screen : width:384, height:640
 # size for viewsonic : width:576, height:960
 # size for 7inch hdmi lcd (b) - waveshare w480 h800 (portrait orientation)
-screenWidth = 480
-screenHeight = 800
-
-#epd = epd7in5.EPD()
-#epd.init()
+# screenWidth = 480
+# screenHeight = 800
+screenWidth = smp.screenWidth
+screenHeight = smp.screenHeight
+fullscreen = smp.fullscreen
 
 colScore = round(screenWidth / 4)
 colMark = round(screenWidth * .17)
@@ -22,8 +20,10 @@ colTarget = screenWidth - 2 * colScore - 2 * colMark
 rowHeight = round(screenHeight / 11)
 rowTop = screenHeight - 10 * rowHeight
 
-screen = pygame.display.set_mode((screenWidth, screenHeight))
-# screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # For screen on Raspberry Pi
+if fullscreen:
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # For screen on Raspberry Pi
+else:
+    screen = pygame.display.set_mode((screenWidth, screenHeight))
 
 pygame.display.set_caption("CRICKET")
 
@@ -51,10 +51,6 @@ SEVENTEEN = "17"
 SIXTEEN = "16"
 FIFTEEN = "15"
 FOURTEEN = "14"
-
-# LEFTRIGHT = "lr"
-# UPDOWN = "ud"
-# STICK = "joystick"
 
 player1 = True
 scoreMultiplier = 1
@@ -130,10 +126,6 @@ def check_input(event, test):
             return True
         if test == FOURTEEN and event.key == pygame.K_4:
             return True
-        # if test == UPDOWN and (event.key == K_UP or event.key == K_DOWN):
-        #    return True
-        # if test == STICK and (event.key == K_UP or event.key == K_DOWN or event.key == K_LEFT or event.key == K_RIGHT):
-        #    return True
     if event.type == pygame.JOYBUTTONUP:  # USING A GENERIC USB JOYSTICK
         if test == TWENTY and event.button == 0:  # K1
             return True
@@ -360,48 +352,6 @@ def scoreMultiplierTarget(p1, sm):
                 increasePlayerTotal(p1, "B", sm)
                 done = True
 
-            # KEYBOARD INPUTS
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:  # todo include this logic in "increaseplayertotal"
-            #     updateRound(currentRound)
-            #     if p1:
-            #         playerMatrix[0, 10] += otherTarget * sm
-            #         playerMatrix[0, 11] += 1
-            #         addScoreDetail(p1, otherTarget * sm, playerMatrix[0, 11])
-            #     else:
-            #         playerMatrix[1, 10] += otherTarget * sm
-            #         playerMatrix[1, 11] += 1
-            #         addScoreDetail(p1, otherTarget * sm, playerMatrix[1, 11])
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-            #     otherTarget += 1
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-            #     otherTarget += 4
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-            #     otherTarget *= 2
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_0:
-            #     increasePlayerTotal(p1, "20", sm)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_9:
-            #     increasePlayerTotal(p1, "19", sm)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_8:
-            #     increasePlayerTotal(p1, "18", sm)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_7:
-            #     increasePlayerTotal(p1, "17", sm)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_6:
-            #     increasePlayerTotal(p1, "16", sm)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_5:
-            #     increasePlayerTotal(p1, "15", sm)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_4:
-            #     increasePlayerTotal(p1, "14", sm)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_1:
-            #     increasePlayerTotal(p1, "B", sm)
-            #     done = True
         # print("other Target loop:", otherTarget)
         if otherTarget > 13: otherTarget = 1
         otherTargetText = font.render(str(otherTarget), True, (0, 0, 0))
@@ -479,66 +429,6 @@ def scoreCorrection(p1):
                 updatePlayerMatrix(p1, "B", -1)
                 done = True
 
-            # KEYBOARD INPUTS
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-            #     updateRound(currentRound)
-            #     if p1:
-            #         playerMatrix[0, 10] += otherTarget
-            #         playerMatrix[0, 11] += 1
-            #         addScoreDetail(p1, otherTarget, playerMatrix[0, 11])
-            #     else:
-            #         playerMatrix[1, 10] += otherTarget
-            #         playerMatrix[1, 11] += 1
-            #         addScoreDetail(p1, otherTarget, playerMatrix[1, 11])
-            #     done = True
-            # # if event.type == pygame.JOYAXISMOTION and joystick.get_axis(0) == -1:
-            # #    otherTarget -= 1
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-            #     otherTarget -= 1
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-            #     otherTarget -= 4
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-            #     otherTarget *= 2
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_0:
-            #     addMark(p1, "20", True)
-            #     updatePlayerMatrix(p1, "20", -1)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_9:
-            #     addMark(p1, "19", True)
-            #     updatePlayerMatrix(p1, "19", -1)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_8:
-            #     addMark(p1, "18", True)
-            #     updatePlayerMatrix(p1, "18", -1)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_7:
-            #     addMark(p1, "17", True)
-            #     updatePlayerMatrix(p1, "17", -1)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_6:
-            #     addMark(p1, "16", True)
-            #     updatePlayerMatrix(p1, "16", -1)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_5:
-            #     addMark(p1, "15", True)
-            #     updatePlayerMatrix(p1, "15", -1)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_4:
-            #     addMark(p1, "14", True)
-            #     updatePlayerMatrix(p1, "14", -1)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_3:
-            #     addMark(p1, "T", True)
-            #     updatePlayerMatrix(p1, "T", -1)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_2:
-            #     addMark(p1, "D", True)
-            #     updatePlayerMatrix(p1, "D", -1)
-            #     done = True
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_1:
-            #     addMark(p1, "B", True)
-            #     updatePlayerMatrix(p1, "B", -1)
-            #     done = True
         # print("other Target loop:", otherTarget)
         otherTargetText = font.render(str(otherTarget), True, (0, 0, 0))
         pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(colScore + colMark + 1, 0, colTarget - 1, rowTop - 1))
@@ -662,23 +552,7 @@ while gameon:
                     # print("increase round")
                     currentRound = currentRound + 1
                     updateRound(currentRound)
-            # JOYSTICK INPUTS
-            # if event.type == pygame.JOYAXISMOTION:
-            #     if event.axis == 0 and event.value < -JVT:  # joystick.get_axis(0) == 1: # DOWN
-            #         # print("next player by joystick")
-            #         player1 = not player1
-            #         changePlayer(player1)
-            #         scoreMultiplier = 1
-            #         if player1:
-            #             # print("increase round")
-            #             currentRound = currentRound + 1
-            #             updateRound(currentRound)
-            #         pygame.display.flip()
-            #         #pygame.image.save(screen, "./screen.bmp")
-            #         #imageportrait = Image.open('./screen.bmp')
-            #         #imagelandscape = imageportrait.rotate(90, expand=1)
-            #         #epd.display_frame(epd.get_frame_buffer(imagelandscape))
-            #         # if event.type == pygame.JOYBUTTONDOWN:
+
             #     # print("button pressed")
             #     # print(joystick.get_button(0))
             if check_input(event, TWENTY):  # event.type == pygame.JOYBUTTONDOWN and event.button == 0:  # this works; next line also
@@ -718,103 +592,9 @@ while gameon:
             if check_input(event, SELECT):  # event.type == pygame.JOYBUTTONDOWN and joystick.get_button(11):
                 scoreCorrection(player1)
 
-            # KEYBOARD INPUTS
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_0:
-            #     scorePlayerThrow(player1, "20", scoreMultiplier)
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_9:
-            #     scorePlayerThrow(player1, "19", scoreMultiplier)
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_8:
-            #     scorePlayerThrow(player1, "18", scoreMultiplier)
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_7:
-            #     scorePlayerThrow(player1, "17", scoreMultiplier)
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_6:
-            #     scorePlayerThrow(player1, "16", scoreMultiplier)
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_5:
-            #     scorePlayerThrow(player1, "15", scoreMultiplier)
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_4:
-            #     scorePlayerThrow(player1, "14", scoreMultiplier)
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_3:
-            #     scorePlayerThrow(player1, "T", scoreMultiplier)
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_2:
-            #     scorePlayerThrow(player1, "D", scoreMultiplier)
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_1:
-            #     scorePlayerThrow(player1, "B", scoreMultiplier)
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-            #     # todo ask for confirmation or activate on game end only
-            #     # reset variable
-            #     playerMatrix = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
-            #     player1 = True
-            #     currentRound = 1
-            #     scoreMultiplier = 1
-            #     pygame.display.flip()
-            #     done = True
-            #     # logline.append(time.strftime("%I;%M;%S"))
-            #     # logline.append(" : Start pressed")
-            #     # logfile.write(" ".join(logline)+"\n")
-            #     # logline = ""
-            #     # redraw screen and initialize joystick(?)
-            #     # initScoreBoard()
-            #     # pygame.joystick.init()
-            #     # joystick = pygame.joystick.Joystick(0)
-            #     # joystick.init()
-
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_x:
-            #     scoreCorrection(player1)
-            # if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
-            #    selectOtherTarget(player1, scoreMultiplier)
-
-            # FOR Eink : if event.type == pygame.JOYBUTTONDOWN or (event.type == pygame.JOYAXISMOTION and event.axis == 0):
-                # print(event)
             checkWinner()
             updateScoreScreen(player1)
             pygame.display.flip()
-                # pygame.image.save(screen, "./screen.bmp")
-
-                # imageportrait = Image.open('./screen.bmp')
-                # imagelandscape = imageportrait.rotate( 90, expand=1 )
-                # epd.display_frame(epd.get_frame_buffer(imagelandscape))
-    # live action section
-
-    # updateScoreScreen(player1)
-    # print("Success Left:", playerMatrix[:, 0:10].sum())
-    # checkWinner()
-    # pygame.display.flip()
-    # clock.tick(20)
-
-    # -------------------------------------------
-
-    # pressed = pygame.key.get_pressed()
-    # if pressed[pygame.K_UP]: y -= 3
-    # if pressed[pygame.K_DOWN]: y += 3
-    # if pressed[pygame.K_LEFT]: x -= 3
-    # if pressed[pygame.K_RIGHT]: x += 3
-
-    # if is_blue:
-    #    color = (0, 128, 255)
-    # else:
-    #    color = (255, 100, 0)
-
-    # updateScoreScreen(not player1, playerMatrix[1, 10])
-    # screen.blit(font.render(str(playerMatrix[0, 10]), True, (0, 0, 0) ),(9,9))
-    # screen.blit(font.render(str(playerMatrix[1, 10]), True, (0, 0, 0)), (300, 9))
-
-    # DEBUG message
-    # pygame.draw.rect(screen, (0,0,0), pygame.Rect(0, 0, 484, 20))
-    # playerdata = fontDebug.render(str(playerMatrix), True, (0, 255, 255))
-    # screen.blit(playerdata, (2, 0))
-
-    # print(m.floor(3/21))
-    # print(21 % 20 + 1)
-    # print(pygame.joystick.get_count())
-
-    # addScoreDetail(True, 12, 1)
-    # addScoreDetail(True, 57, 2)
-    # addScoreDetail(True, -57, 3)
-    # addScoreDetail(True, 12, 23)
-    # addScoreDetail(False, 12, 1)
-    # addScoreDetail(False, 57, 2)
-    # addScoreDetail(False, -57, 3)
-    # addScoreDetail(False, 12, 23)
 
     # ---------------------------------------------
     # logfile.close()
