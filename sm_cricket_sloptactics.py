@@ -1,39 +1,59 @@
 import pygame
 import numpy as np
-import platform
+# import platform
 import sm_cricket_sloptactics_param as smp
 
 pygame.init()
 # size of the e-ink 7.5-inch screen : width:384, height:640
 # size for viewsonic : width:576, height:960
-# size for 7inch hdmi lcd (b) - waveshare w480 h800 (portrait orientation)
+# size for 7inch hdmi lcd (b) - WaveShare w480 h800 (portrait orientation)
 # screenWidth = 480
 # screenHeight = 800
-screenWidth = smp.screenWidth
-screenHeight = smp.screenHeight
+screen_width = smp.screenWidth
+screen_height = smp.screenHeight
 fullscreen = smp.fullscreen
 
-col_score = round(screenWidth / 4)
-colMark = round(screenWidth * .17)
-colTarget = screenWidth - 2 * col_score - 2 * colMark
+col_score = round(screen_width / 4)
+col_mark = round(screen_width * .17)
+col_target = screen_width - 2 * col_score - 2 * col_mark
 
-rowHeight = round(screenHeight / 11)
-rowTop = screenHeight - 10 * rowHeight
+row_height = round(screen_height / 11)
+row_top = screen_height - 10 * row_height
+
+grid_offset = 8
+p1_pos = (col_score + round(col_mark / 2), round(row_top / 2) + grid_offset)
+p2_pos = (screen_width - col_score - round(col_mark / 2), round(row_top / 2) + grid_offset)
+round_pos = (round(screen_width / 2), round(row_top / 2) + grid_offset)
+p1_score_pos = (round(col_score / 2), round(row_top / 2) + grid_offset)
+p2_score_pos = (round(screen_width - (col_score / 2)), round(row_top / 2) + grid_offset)
+twenty_pos = (round(screen_width / 2), row_top + 0 * row_height + round(row_height / 2) + grid_offset)
+nineteen_pos = (round(screen_width / 2), row_top + 1 * row_height + round(row_height / 2) + grid_offset)
+eighteen_pos = (round(screen_width / 2), row_top + 2 * row_height + round(row_height / 2) + grid_offset)
+seventeen_pos = (round(screen_width / 2), row_top + 3 * row_height + round(row_height / 2) + grid_offset)
+sixteen_pos = (round(screen_width / 2), row_top + 4 * row_height + round(row_height / 2) + grid_offset)
+fifteen_pos = (round(screen_width / 2), row_top + 5 * row_height + round(row_height / 2) + grid_offset)
+fourteen_pos = (round(screen_width / 2), row_top + 6 * row_height + round(row_height / 2) + grid_offset)
+triple_pos = (round(screen_width / 2), row_top + 7 * row_height + round(row_height / 2) + grid_offset)
+double_pos = (round(screen_width / 2), row_top + 8 * row_height + round(row_height / 2) + grid_offset)
+bull_pos = (round(screen_width / 2), row_top + 9 * row_height + round(row_height / 2) + grid_offset)
 
 if fullscreen:
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # For screen on Raspberry Pi
 else:
-    screen = pygame.display.set_mode((screenWidth, screenHeight))
+    screen = pygame.display.set_mode((screen_width, screen_height))
 
-pygame.display.set_caption("CRICKET")
+pygame.display.set_caption("SLOP TACTICS CRICKET")
+# TODO Get a non-system font
+font = pygame.font.Font("HyningsHandwriting-Regular.ttf", 72)  # about screenHeight/20
+fontBig = pygame.font.Font("HyningsHandwriting-Regular.ttf", 72)  # about screenHeight/15
+fontScoreHist = pygame.font.Font("HyningsHandwriting-Regular.ttf", 40)  # about screenHeight/40
+fontDebug = pygame.font.SysFont("arial", 16)  # about screenHeight/80
 
-font = pygame.font.SysFont("arial", 72)  # about screenHeigth/20
-fontBig = pygame.font.SysFont("arial", 60)  # about screenHeigth/15
-fontScoreHist = pygame.font.SysFont("arial", 40)  # about screenHeigth/40
-fontDebug = pygame.font.SysFont("arial", 16)  # about screenHeigth/80
-
+# CONSTANTS
 JVT = .9  # Joystick Value Threshold
-# the values for the following constants are not used themselves
+
+P1 = "P1"
+P2 = "P2"
 START = "start"
 SELECT = "select"
 ESC = "escape"
@@ -41,9 +61,9 @@ UP = "up"
 RIGHT = "right"
 DOWN = "down"
 LEFT = "Left"
-BULL = "bullseye"
-TRIPLE = "triple"
-DOUBLE = "double"
+BULL = "B"
+TRIPLE = "T"
+DOUBLE = "D"
 TWENTY = "20"
 NINETEEN = "19"
 EIGHTEEN = "18"
@@ -58,22 +78,8 @@ currentRound = 1
 prevTot1 = 0
 prevTot2 = 0
 
-text20 = font.render("20", True, (0, 0, 0))
-text19 = font.render("19", True, (0, 0, 0))
-text18 = font.render("18", True, (0, 0, 0))
-text17 = font.render("17", True, (0, 0, 0))
-text16 = font.render("16", True, (0, 0, 0))
-text15 = font.render("15", True, (0, 0, 0))
-text14 = font.render("14", True, (0, 0, 0))
-textDouble = font.render("D", True, (0, 0, 0))
-textTriple = font.render("T", True, (0, 0, 0))
-textBull = font.render("B", True, (0, 0, 0))
-textPlayer1 = font.render("P1", True, (0, 0, 0))
-textPlayer2 = font.render("P2", True, (0, 0, 0))
-
 # 20-14, D, T, B, score, score count
 playerMatrix = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
-# print(playerMatrix[1,0])
 
 done = False
 gameon = True
@@ -85,12 +91,25 @@ y = 30
 clock = pygame.time.Clock()
 screen.fill((255, 255, 255))
 
+#       R    G    B
+BLACK = (0, 0, 0)
+GRAY = (100, 100, 100)
+NAVYBLUE = (60, 60, 100)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255, 5)
+YELLOW = (255, 255, 0)
+ORANGE = (255, 128, 0)
+PURPLE = (255, 0, 255)
+CYAN = (0, 255, 255)
+
 # FUNCTIONS
 
 
 def text_blit(text, tb_font, clr, center):
-    textrender = tb_font.render(text, True, clr)
-    return textrender, textrender.get_rect(center=center)
+    text_render = tb_font.render(text, True, clr)
+    return text_render, text_render.get_rect(center=center)
 
 
 def check_input(ci_event, test):
@@ -177,11 +196,11 @@ def get_player_target_success(p1, t):
 
 
 def target_center(p1, t):
-    tc_y = rowTop - rowHeight + round((get_target_index(t) + 1.5) * rowHeight)
+    tc_y = row_top - row_height + round((get_target_index(t) + 1.5) * row_height)
     if p1:
-        tc_x = round(col_score + colMark / 2)
+        tc_x = round(col_score + col_mark / 2)
     else:
-        tc_x = round(screenWidth - col_score - colMark / 2)
+        tc_x = round(screen_width - col_score - col_mark / 2)
     return int(tc_x), int(tc_y)
 
 
@@ -192,21 +211,19 @@ def add_mark(p1, t, remove=False):
     clr = 255 if remove else 0
     # print(clr)
     if t_mark == 2:
-        pygame.draw.line(screen, (clr, clr, clr), (x_target - round(colMark / 3), y_target + round(rowHeight / 3)),
-                         (x_target + round(colMark / 3), y_target - round(rowHeight / 3)), 3)
+        pygame.draw.line(screen, (clr, clr, clr), (x_target - round(col_mark / 3), y_target + round(row_height / 3)),
+                         (x_target + round(col_mark / 3), y_target - round(row_height / 3)), 3)
     elif t_mark == 1:
-        pygame.draw.line(screen, (clr, clr, clr), (x_target - round(colMark / 3), y_target - round(rowHeight / 3)),
-                         (x_target + round(colMark / 3), y_target + round(rowHeight / 3)), 3)
+        pygame.draw.line(screen, (clr, clr, clr), (x_target - round(col_mark / 3), y_target - round(row_height / 3)),
+                         (x_target + round(col_mark / 3), y_target + round(row_height / 3)), 3)
     else:
         pygame.draw.circle(screen, (clr, clr, clr), (x_target, y_target),
-                           int(round(min(colMark, rowHeight) / 2) - 5), 3)
+                           int(round(min(col_mark, row_height) / 2) - 5), 3)
 
 
 def update_round(r):
-    pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(col_score + colMark + 1, 0, colTarget - 1, rowTop - 1))
-    cround = font.render(str(r), True, (0, 0, 0))
-    screen.blit(cround, (
-        col_score + colMark + round((colTarget - cround.get_width()) / 2), round((rowTop - cround.get_height()) / 2)))
+    pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(col_score + col_mark + 1, 0, col_target - 1, row_top - 1))
+    screen.blit(*text_blit(str(r), font, BLACK, round_pos))
 
 
 def update_player_matrix(p1, t, sign=1):
@@ -235,8 +252,8 @@ def increase_player_total(p1, t, sm):
 def score_player_throw(p1, t, sm):
     x_center, y_double = target_center(p1, "D")
     x_center, y_triple = target_center(p1, "T")
-    x_center = int(round(screenWidth / 2))
-    radius = int(round(colMark * .4))
+    x_center = int(round(screen_width / 2))
+    radius = int(round(col_mark * .4))
 
     if get_player_target_success(p1, t) > 0:
         update_player_matrix(p1, t)
@@ -260,40 +277,32 @@ def score_player_throw(p1, t, sm):
 
 def update_score_screen(p1):
     if p1:
-        p1_score = font.render(str(playerMatrix[0, 10]), True, (0, 0, 0))
-        pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(0, 0, col_score, rowTop))
-        screen.blit(p1_score, (round(col_score - p1_score.get_width()) / 2,
-                               round((rowTop - p1_score.get_height()) / 2)))
+        pygame.draw.rect(screen, WHITE, pygame.Rect(0, 0, col_score, row_top))
+        screen.blit(*text_blit(str(playerMatrix[0, 10]), font, BLACK, p1_score_pos))
     else:
-        p2_score = font.render(str(playerMatrix[1, 10]), True, (0, 0, 0))
-        pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(screenWidth - col_score + 1, 0, col_score, rowTop))
-        screen.blit(p2_score, (screenWidth - col_score + round((col_score - p2_score.get_width()) / 2),
-                               round((rowTop - p2_score.get_height()) / 2)))
+        pygame.draw.rect(screen, WHITE, pygame.Rect(screen_width - col_score + 1, 0, col_score, row_top))
+        screen.blit(*text_blit(str(playerMatrix[1, 10]), font, BLACK, p2_score_pos))
 
 
 def change_player(p1):
     if p1:
-        pygame.draw.rect(screen, (255, 255, 255),
-                         pygame.Rect(screenWidth - col_score - colMark + 1, 0, colMark - 1, rowTop))
-        screen.blit(textPlayer1,
-                    ((col_score + colMark / 2 - textPlayer1.get_width() / 2),
-                     round((rowTop - textPlayer1.get_height()) / 2)))  # Remove y+9 (for testing)
+        pygame.draw.rect(screen, WHITE, pygame.Rect(screen_width - col_score - col_mark + 1, 0, col_mark - 1, row_top))
+        screen.blit(*text_blit(P1, font, BLACK, p1_pos))
     else:
-        pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(col_score + 1, 0, colMark - 1, rowTop))
-        screen.blit(textPlayer2, ((screenWidth - col_score - colMark / 2 - textPlayer2.get_width() / 2),
-                                  round((rowTop - textPlayer2.get_height()) / 2)))
+        pygame.draw.rect(screen, WHITE, pygame.Rect(col_score + 1, 0, col_mark - 1, row_top))
+        screen.blit(*text_blit(P2, font, BLACK, p2_pos))
 
 
 def check_winner():
     if playerMatrix[0, 0:10].sum() == 0 and playerMatrix[0, 10] > playerMatrix[1, 10]:
-        text_p1_wins = fontBig.render("Player 1 WINS!", True, (0, 0, 0))
-        screen.blit(text_p1_wins, (round(screenWidth - text_p1_wins.get_width()) / 2, screenHeight / 2))
+        text_p1_wins = fontBig.render("Player 1 WINS!", True, (255, 0, 0))
+        screen.blit(text_p1_wins, (round(screen_width - text_p1_wins.get_width()) / 2, screen_height / 2))
     elif playerMatrix[1, 0:10].sum() == 0 and playerMatrix[0, 10] < playerMatrix[1, 10]:
-        text_p2_wins = fontBig.render("Player 2 WINS!", True, (0, 0, 0))
-        screen.blit(text_p2_wins, (round(screenWidth - text_p2_wins.get_width()) / 2, screenHeight / 2))
+        text_p2_wins = fontBig.render("Player 2 WINS!", True, (255, 0, 0))
+        screen.blit(text_p2_wins, (round(screen_width - text_p2_wins.get_width()) / 2, screen_height / 2))
     elif playerMatrix[:, 0:10].sum() == 0 and playerMatrix[0, 10] == playerMatrix[1, 10]:
-        text_draw = fontBig.render("DRAW!", True, (0, 0, 0))
-        screen.blit(text_draw, (round(screenWidth - text_draw.get_width()) / 2, screenHeight / 2))
+        text_draw = fontBig.render("DRAW!", True, (255, 0, 0))
+        screen.blit(text_draw, (round(screen_width - text_draw.get_width()) / 2, screen_height / 2))
 
 
 def score_multiplier_target(p1, sm):
@@ -350,10 +359,10 @@ def score_multiplier_target(p1, sm):
         if other_target > 13:
             other_target = 1
         other_target_text = font.render(str(other_target), True, (0, 0, 0))
-        pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(col_score + colMark + 1, 0, colTarget - 1, rowTop - 1))
+        pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(col_score + col_mark + 1, 0, col_target - 1, row_top - 1))
         screen.blit(other_target_text, (
-            round((screenWidth - other_target_text.get_width()) / 2),
-            round((rowTop - other_target_text.get_height()) / 2)))
+            round((screen_width - other_target_text.get_width()) / 2),
+            round((row_top - other_target_text.get_height()) / 2)))
         pygame.display.flip()
         update_round(currentRound)  # todo global variable...
         clock.tick(20)
@@ -423,14 +432,8 @@ def score_correction(p1):
                 sc_done = True
 
         # print("other Target loop:", otherTarget)
-        other_target_text = font.render(str(other_target), True, (0, 0, 0))
-        pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(col_score + colMark + 1, 0, colTarget - 1, rowTop - 1))
-        screen.blit(other_target_text, (
-            round((screenWidth - other_target_text.get_width()) / 2),
-            round((rowTop - other_target_text.get_height()) / 2)))
-        # pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 0, 484, 20))
-        # playerdata = fontDebug.render(str(playerMatrix), True, (0, 255, 255))
-        # screen.blit(playerdata, (2, 0))
+        pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(col_score + col_mark + 1, 0, col_target - 1, row_top - 1))
+        screen.blit(*text_blit(str(other_target), font, BLACK, round_pos))
         pygame.display.flip()
         update_round(currentRound)  # todo global variable...
         clock.tick(20)
@@ -443,69 +446,54 @@ def add_score_detail(p1, score, n):
         if p1:
             asd_x = round(cc * col_score / 4 - mark.get_width() / 2)
             # x = round((m.floor(n/21)+1) * colScore/4 - mark.get_width()/2)
-            asd_y = rowTop + round(((n - 1) % 20) * rowHeight / 2) + round((rowHeight - mark.get_height()) / 8)
+            asd_y = row_top + round(((n - 1) % 20) * row_height / 2) + round((row_height - mark.get_height()) / 8)
             screen.blit(mark, (asd_x, asd_y))
         else:
-            asd_x = round(screenWidth - cc * col_score / 4 - mark.get_width() / 2)
-            asd_y = rowTop + round(((n - 1) % 20) * rowHeight / 2) + round((rowHeight - mark.get_height()) / 8)
+            asd_x = round(screen_width - cc * col_score / 4 - mark.get_width() / 2)
+            asd_y = row_top + round(((n - 1) % 20) * row_height / 2) + round((row_height - mark.get_height()) / 8)
             screen.blit(mark, (asd_x, asd_y))
 
 
 def init_score_board():
     screen.fill((255, 255, 255))
-    # Initialize the joysticks
-    # pygame.joystick.init()
     # column Grid
-    pygame.draw.line(screen, (0, 0, 0,), (col_score, 0), (col_score, screenHeight), 1)
-    pygame.draw.line(screen, (0, 0, 0,), (col_score + colMark, 0), (col_score + colMark, screenHeight), 1)
-    pygame.draw.line(screen, (0, 0, 0,), (col_score + colMark + colTarget, 0),
-                     (col_score + colMark + colTarget, screenHeight), 1)
-    pygame.draw.line(screen, (0, 0, 0,), (col_score + 2 * colMark + colTarget, 0),
-                     (col_score + 2 * colMark + colTarget, screenHeight), 1)
+    pygame.draw.line(screen, (0, 0, 0,), (col_score, 0), (col_score, screen_height), 1)
+    pygame.draw.line(screen, (0, 0, 0,), (col_score + col_mark, 0), (col_score + col_mark, screen_height), 1)
+    pygame.draw.line(screen, (0, 0, 0,), (col_score + col_mark + col_target, 0),
+                     (col_score + col_mark + col_target, screen_height), 1)
+    pygame.draw.line(screen, (0, 0, 0,), (col_score + 2 * col_mark + col_target, 0),
+                     (col_score + 2 * col_mark + col_target, screen_height), 1)
     # Row Grid
     for r in range(1, 10):
-        pygame.draw.line(screen, (0, 0, 0,), (col_score, rowTop + r * rowHeight),
-                         (screenWidth - col_score, rowTop + r * rowHeight), 1)
+        pygame.draw.line(screen, (0, 0, 0,), (col_score, row_top + r * row_height),
+                         (screen_width - col_score, row_top + r * row_height), 1)
         # Draw double first line
-    pygame.draw.line(screen, (0, 0, 0,), (0, rowTop + 2), (screenWidth, rowTop + 2), 1)
-    pygame.draw.line(screen, (0, 0, 0,), (0, rowTop), (screenWidth, rowTop), 1)
+    pygame.draw.line(screen, (0, 0, 0,), (0, row_top + 2), (screen_width, row_top + 2), 1)
+    pygame.draw.line(screen, (0, 0, 0,), (0, row_top), (screen_width, row_top), 1)
 
-    # Target TODO Better center the text with textVar.get_width(), get_heigth() & round()
-    screen.blit(textPlayer1, ((col_score + colMark / 2 - textPlayer1.get_width() / 2),
-                              round((rowTop - textPlayer1.get_height()) / 2)))  # Remove y+9 (for testing)
-    # screen.blit(textPlayer2,((screenWidth-colScore-colMark/2 - textPlayer2.get_width()/2), 9))
-    screen.blit(text20,
-                (round((screenWidth - text20.get_width()) / 2), rowTop + round((rowHeight - text20.get_height()) / 2)))
-    screen.blit(text19, (round((screenWidth - text19.get_width()) / 2),
-                         rowTop + 1 * rowHeight + round((rowHeight - text19.get_height()) / 2)))
-    screen.blit(text18, (round((screenWidth - text18.get_width()) / 2),
-                         rowTop + 2 * rowHeight + round((rowHeight - text18.get_height()) / 2)))
-    screen.blit(text17, (round((screenWidth - text17.get_width()) / 2),
-                         rowTop + 3 * rowHeight + round((rowHeight - text17.get_height()) / 2)))
-    screen.blit(text16, (round((screenWidth - text16.get_width()) / 2),
-                         rowTop + 4 * rowHeight + round((rowHeight - text16.get_height()) / 2)))
-    screen.blit(text15, (round((screenWidth - text15.get_width()) / 2),
-                         rowTop + 5 * rowHeight + round((rowHeight - text15.get_height()) / 2)))
-    screen.blit(text14, (round((screenWidth - text14.get_width()) / 2),
-                         rowTop + 6 * rowHeight + round((rowHeight - text14.get_height()) / 2)))
-    screen.blit(textDouble, (round((screenWidth - textDouble.get_width()) / 2),
-                             rowTop + 7 * rowHeight + round((rowHeight - textDouble.get_height()) / 2)))
-    screen.blit(textTriple, (round((screenWidth - textTriple.get_width()) / 2),
-                             rowTop + 8 * rowHeight + round((rowHeight - textTriple.get_height()) / 2)))
-    screen.blit(textBull, (round((screenWidth - textBull.get_width()) / 2),
-                           rowTop + 9 * rowHeight + round((rowHeight - textBull.get_height()) / 2)))
-    init_round = font.render(str(currentRound), True, (0, 0, 0))
-    screen.blit(init_round,
-                (round((screenWidth - init_round.get_width()) / 2), round((rowTop - init_round.get_height()) / 2)))
+    # Target
+    screen.blit(*text_blit(P1, font, BLACK, p1_pos))
+    screen.blit(*text_blit(TWENTY, font, BLACK, twenty_pos))
+    screen.blit(*text_blit(NINETEEN, font, BLACK, nineteen_pos))
+    screen.blit(*text_blit(EIGHTEEN, font, BLACK, eighteen_pos))
+    screen.blit(*text_blit(SEVENTEEN, font, BLACK, seventeen_pos))
+    screen.blit(*text_blit(SIXTEEN, font, BLACK, sixteen_pos))
+    screen.blit(*text_blit(FIFTEEN, font, BLACK, fifteen_pos))
+    screen.blit(*text_blit(FOURTEEN, font, BLACK, fourteen_pos))
+    screen.blit(*text_blit(DOUBLE, font, BLACK, double_pos))
+    screen.blit(*text_blit(TRIPLE, font, BLACK, triple_pos))
+    screen.blit(*text_blit(BULL, font, BLACK, bull_pos))
 
-    print("="*40, "System Information", "="*40)
-    uname = platform.uname()
-    print(f"System: {uname.system}")
-    print(f"Node Name: {uname.node}")
-    print(f"Release: {uname.release}")
-    print(f"Version: {uname.version}")
-    print(f"Machine: {uname.machine}")
-    print(f"Processor: {uname.processor}")
+    screen.blit(*text_blit(str(currentRound), font, BLACK, round_pos))
+
+    # print("="*40, "System Information", "="*40)
+    # uname = platform.uname()
+    # print(f"System: {uname.system}")
+    # print(f"Node Name: {uname.node}")
+    # print(f"Release: {uname.release}")
+    # print(f"Version: {uname.version}")
+    # print(f"Machine: {uname.machine}")
+    # print(f"Processor: {uname.processor}")
 
 
 # Main game loop
@@ -521,8 +509,6 @@ while gameon:
     joystick.init()
     done = False
     pygame.display.flip()
-    print(joystick.get_button(10))
-    print(joystick.get_button(1))
 
     while not done:
         for event in pygame.event.get():
@@ -530,7 +516,6 @@ while gameon:
                 done = True
                 gameon = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                # is_blue = not is_blue
                 done = True
                 gameon = False
             if check_input(event, DOWN):
@@ -538,33 +523,29 @@ while gameon:
                 change_player(player1)
                 scoreMultiplier = 1
                 if player1:
-                    # print("increase round")
                     currentRound = currentRound + 1
                     update_round(currentRound)
 
-            #     # print("button pressed")
-            #     # print(joystick.get_button(0))
             if check_input(event, TWENTY):
-                # print("button 20 pressed")
-                score_player_throw(player1, "20", scoreMultiplier)
+                score_player_throw(player1, TWENTY, scoreMultiplier)
             if check_input(event, NINETEEN):
-                score_player_throw(player1, "19", scoreMultiplier)
+                score_player_throw(player1, NINETEEN, scoreMultiplier)
             if check_input(event, EIGHTEEN):
-                score_player_throw(player1, "18", scoreMultiplier)
+                score_player_throw(player1, EIGHTEEN, scoreMultiplier)
             if check_input(event, SEVENTEEN):
-                score_player_throw(player1, "17", scoreMultiplier)
+                score_player_throw(player1, SEVENTEEN, scoreMultiplier)
             if check_input(event, SIXTEEN):
-                score_player_throw(player1, "16", scoreMultiplier)
+                score_player_throw(player1, SIXTEEN, scoreMultiplier)
             if check_input(event, FIFTEEN):
-                score_player_throw(player1, "15", scoreMultiplier)
+                score_player_throw(player1, FIFTEEN, scoreMultiplier)
             if check_input(event, FOURTEEN):
-                score_player_throw(player1, "14", scoreMultiplier)
+                score_player_throw(player1, FOURTEEN, scoreMultiplier)
             if check_input(event, TRIPLE):
-                score_player_throw(player1, "T", scoreMultiplier)
+                score_player_throw(player1, TRIPLE, scoreMultiplier)
             if check_input(event, DOUBLE):
-                score_player_throw(player1, "D", scoreMultiplier)
+                score_player_throw(player1, DOUBLE, scoreMultiplier)
             if check_input(event, BULL):
-                score_player_throw(player1, "B", scoreMultiplier)
+                score_player_throw(player1, BULL, scoreMultiplier)
             if check_input(event, START):
                 # todo ask for confirmation or activate on game end only
                 # reset variable
@@ -576,9 +557,8 @@ while gameon:
                 # redraw screen
                 pygame.display.flip()
                 done = True
-                # initScoreBoard()
 
-            if check_input(event, SELECT):  # event.type == pygame.JOYBUTTONDOWN and joystick.get_button(11):
+            if check_input(event, SELECT):  # X/oops/correction button
                 score_correction(player1)
 
             check_winner()
@@ -588,7 +568,4 @@ while gameon:
     # ---------------------------------------------
     # logfile.close()
 
-# Close the window and quit.
-# If you forget this line, the program will 'hang'
-# on exit if running from IDLE.
 pygame.quit()
