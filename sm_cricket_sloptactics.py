@@ -3,6 +3,44 @@ import numpy as np
 # import platform
 import sm_cricket_sloptactics_param as smp
 
+# CONSTANTS
+JVT = .9  # Joystick Value Threshold
+
+P1 = "P1"
+P2 = "P2"
+START = "start"
+SELECT = "select"
+ESC = "escape"
+UP = "up"
+RIGHT = "right"
+DOWN = "down"
+LEFT = "Left"
+BULL = "B"
+TRIPLE = "T"
+DOUBLE = "D"
+TWENTY = "20"
+NINETEEN = "19"
+EIGHTEEN = "18"
+SEVENTEEN = "17"
+SIXTEEN = "16"
+FIFTEEN = "15"
+FOURTEEN = "14"
+
+#COLOR   (R, G, B)
+BLACK = (0, 0, 0)
+GRAY = (100, 100, 100)
+NAVYBLUE = (60, 60, 100)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255, 5)
+YELLOW = (255, 255, 0)
+ORANGE = (255, 128, 0)
+PURPLE = (255, 0, 255)
+CYAN = (0, 255, 255)
+
+# VARIABLES
+
 pygame.init()
 # size of the e-ink 7.5-inch screen : width:384, height:640
 # size for viewsonic : width:576, height:960
@@ -37,40 +75,18 @@ triple_pos = (round(screen_width / 2), row_top + 7 * row_height + round(row_heig
 double_pos = (round(screen_width / 2), row_top + 8 * row_height + round(row_height / 2) + grid_offset)
 bull_pos = (round(screen_width / 2), row_top + 9 * row_height + round(row_height / 2) + grid_offset)
 
+result_pos = (round(screen_width / 2), round(screen_height / 2))
+
 if fullscreen:
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # For screen on Raspberry Pi
 else:
     screen = pygame.display.set_mode((screen_width, screen_height))
 
 pygame.display.set_caption("SLOP TACTICS CRICKET")
-# TODO Get a non-system font
-font = pygame.font.Font("HyningsHandwriting-Regular.ttf", 72)  # about screenHeight/20
-fontBig = pygame.font.Font("HyningsHandwriting-Regular.ttf", 72)  # about screenHeight/15
-fontScoreHist = pygame.font.Font("HyningsHandwriting-Regular.ttf", 40)  # about screenHeight/40
+font = pygame.font.Font("HyningsHandwriting-Regular.ttf", 72)  # about screenHeight/20 - grid text
+fontBig = pygame.font.Font("HyningsHandwriting-Regular.ttf", 72)  # about screenHeight/15 - final result text
+fontScoreHist = pygame.font.Font("HyningsHandwriting-Regular.ttf", 40)  # about screenHeight/40 - score history
 fontDebug = pygame.font.SysFont("arial", 16)  # about screenHeight/80
-
-# CONSTANTS
-JVT = .9  # Joystick Value Threshold
-
-P1 = "P1"
-P2 = "P2"
-START = "start"
-SELECT = "select"
-ESC = "escape"
-UP = "up"
-RIGHT = "right"
-DOWN = "down"
-LEFT = "Left"
-BULL = "B"
-TRIPLE = "T"
-DOUBLE = "D"
-TWENTY = "20"
-NINETEEN = "19"
-EIGHTEEN = "18"
-SEVENTEEN = "17"
-SIXTEEN = "16"
-FIFTEEN = "15"
-FOURTEEN = "14"
 
 player1 = True
 scoreMultiplier = 1
@@ -84,25 +100,9 @@ playerMatrix = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3
 done = False
 gameon = True
 
-is_blue = True
-x = 30
-y = 30
-
 clock = pygame.time.Clock()
 screen.fill((255, 255, 255))
 
-#       R    G    B
-BLACK = (0, 0, 0)
-GRAY = (100, 100, 100)
-NAVYBLUE = (60, 60, 100)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255, 5)
-YELLOW = (255, 255, 0)
-ORANGE = (255, 128, 0)
-PURPLE = (255, 0, 255)
-CYAN = (0, 255, 255)
 
 # FUNCTIONS
 
@@ -295,14 +295,11 @@ def change_player(p1):
 
 def check_winner():
     if playerMatrix[0, 0:10].sum() == 0 and playerMatrix[0, 10] > playerMatrix[1, 10]:
-        text_p1_wins = fontBig.render("Player 1 WINS!", True, (255, 0, 0))
-        screen.blit(text_p1_wins, (round(screen_width - text_p1_wins.get_width()) / 2, screen_height / 2))
+        screen.blit(*text_blit("Player 1 WINS!", fontBig, RED, result_pos))
     elif playerMatrix[1, 0:10].sum() == 0 and playerMatrix[0, 10] < playerMatrix[1, 10]:
-        text_p2_wins = fontBig.render("Player 2 WINS!", True, (255, 0, 0))
-        screen.blit(text_p2_wins, (round(screen_width - text_p2_wins.get_width()) / 2, screen_height / 2))
+        screen.blit(*text_blit("Player 2 WINS!", fontBig, RED, result_pos))
     elif playerMatrix[:, 0:10].sum() == 0 and playerMatrix[0, 10] == playerMatrix[1, 10]:
-        text_draw = fontBig.render("DRAW!", True, (255, 0, 0))
-        screen.blit(text_draw, (round(screen_width - text_draw.get_width()) / 2, screen_height / 2))
+        screen.blit(*text_blit("DRAW!", fontBig, RED, result_pos))
 
 
 def score_multiplier_target(p1, sm):
@@ -358,11 +355,8 @@ def score_multiplier_target(p1, sm):
         # print("other Target loop:", otherTarget)
         if other_target > 13:
             other_target = 1
-        other_target_text = font.render(str(other_target), True, (0, 0, 0))
         pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(col_score + col_mark + 1, 0, col_target - 1, row_top - 1))
-        screen.blit(other_target_text, (
-            round((screen_width - other_target_text.get_width()) / 2),
-            round((row_top - other_target_text.get_height()) / 2)))
+        screen.blit(*text_blit(str(other_target), font, BLACK, round_pos))
         pygame.display.flip()
         update_round(currentRound)  # todo global variable...
         clock.tick(20)
