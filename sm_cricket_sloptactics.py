@@ -39,6 +39,8 @@ ORANGE = (255, 128, 0)
 PURPLE = (255, 0, 255)
 CYAN = (0, 255, 255)
 
+INITARRAY = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
+
 # VARIABLES
 
 pygame.init()
@@ -71,8 +73,8 @@ seventeen_pos = (round(screen_width / 2), row_top + 3 * row_height + round(row_h
 sixteen_pos = (round(screen_width / 2), row_top + 4 * row_height + round(row_height / 2) + grid_offset)
 fifteen_pos = (round(screen_width / 2), row_top + 5 * row_height + round(row_height / 2) + grid_offset)
 fourteen_pos = (round(screen_width / 2), row_top + 6 * row_height + round(row_height / 2) + grid_offset)
-triple_pos = (round(screen_width / 2), row_top + 7 * row_height + round(row_height / 2) + grid_offset)
-double_pos = (round(screen_width / 2), row_top + 8 * row_height + round(row_height / 2) + grid_offset)
+double_pos = (round(screen_width / 2), row_top + 7 * row_height + round(row_height / 2) + grid_offset)
+triple_pos = (round(screen_width / 2), row_top + 8 * row_height + round(row_height / 2) + grid_offset)
 bull_pos = (round(screen_width / 2), row_top + 9 * row_height + round(row_height / 2) + grid_offset)
 
 result_pos = (round(screen_width / 2), round(screen_height / 2))
@@ -95,7 +97,7 @@ prevTot1 = 0
 prevTot2 = 0
 
 # 20-14, D, T, B, score, score count
-playerMatrix = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
+playerMatrix = INITARRAY
 
 done = False
 gameon = True
@@ -543,7 +545,7 @@ while gameon:
             if check_input(event, START):
                 # todo ask for confirmation or activate on game end only
                 # reset variable
-                playerMatrix = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
+                playerMatrix = INITARRAY
                 player1 = True
                 currentRound = 1
                 scoreMultiplier = 1
@@ -553,7 +555,13 @@ while gameon:
                 done = True
 
             if check_input(event, SELECT):  # X/oops/correction button
-                score_correction(player1)
+                comparison = playerMatrix == INITARRAY  # arrays cannot be compared directly with ==
+                equal_arrays = comparison.all()
+                if equal_arrays:  # if at beginning of game; exit program
+                    done = True
+                    gameon = False
+                else:
+                    score_correction(player1)
 
             check_winner()
             update_score_screen(player1)
