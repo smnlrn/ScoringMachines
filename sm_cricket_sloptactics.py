@@ -78,6 +78,7 @@ triple_pos = (round(screen_width / 2), row_top + 8 * row_height + round(row_heig
 bull_pos = (round(screen_width / 2), row_top + 9 * row_height + round(row_height / 2) + grid_offset)
 
 result_pos = (round(screen_width / 2), round(screen_height / 2))
+result_rect = (0, round(screen_height / 20 * 9), screen_width, round(screen_height / 10))
 
 if fullscreen:
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # For screen on Raspberry Pi
@@ -297,10 +298,13 @@ def change_player(p1):
 
 def check_winner():
     if playerMatrix[0, 0:10].sum() == 0 and playerMatrix[0, 10] > playerMatrix[1, 10]:
+        pygame.draw.rect(screen, WHITE, result_rect)
         screen.blit(*text_blit("Player 1 WINS!", fontBig, RED, result_pos))
     elif playerMatrix[1, 0:10].sum() == 0 and playerMatrix[0, 10] < playerMatrix[1, 10]:
+        pygame.draw.rect(screen, WHITE, result_rect)
         screen.blit(*text_blit("Player 2 WINS!", fontBig, RED, result_pos))
     elif playerMatrix[:, 0:10].sum() == 0 and playerMatrix[0, 10] == playerMatrix[1, 10]:
+        pygame.draw.rect(screen, WHITE, result_rect)
         screen.blit(*text_blit("DRAW!", fontBig, RED, result_pos))
 
 
@@ -492,6 +496,22 @@ def init_score_board():
     # print(f"Processor: {uname.processor}")
 
 
+def confirm_restart():
+    #pygame.draw.rect(screen, WHITE, result_rect)
+    pygame.draw.rect(screen, WHITE, (0, 0, screen_width, round(screen_height / 12)))
+    screen.blit(*text_blit("Confirm restart", fontBig, RED, (round(screen_width / 2), round(screen_height / 20))))
+    pygame.display.flip()
+    restart = True
+    while restart:
+        for event in pygame.event.get():
+            if check_input(event, START):
+                restart = False
+                return True
+            if check_input(event, SELECT):
+                restart = False
+                return False
+
+
 # Main game loop
 while gameon:
     clock.tick(20)
@@ -543,16 +563,18 @@ while gameon:
             if check_input(event, BULL):
                 score_player_throw(player1, BULL, scoreMultiplier)
             if check_input(event, START):
+
                 # todo ask for confirmation or activate on game end only
-                # reset variable
-                playerMatrix = INITARRAY
-                player1 = True
-                currentRound = 1
-                scoreMultiplier = 1
-                print("Start button pressed")
-                # redraw screen
-                pygame.display.flip()
-                done = True
+                # reset variable (python references variables...)
+                if confirm_restart():
+                    playerMatrix = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
+                    player1 = True
+                    currentRound = 1
+                    scoreMultiplier = 1
+                    print("Start button pressed")
+                    # redraw screen
+                    pygame.display.flip()
+                    done = True
 
             if check_input(event, SELECT):  # X/oops/correction button
                 comparison = playerMatrix == INITARRAY  # arrays cannot be compared directly with ==
