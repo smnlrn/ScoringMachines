@@ -6,8 +6,8 @@ import sm_cricket_sloptactics_param as smp
 # CONSTANTS
 JVT = .9  # Joystick Value Threshold
 
-P1 = "P1"
-P2 = "P2"
+P1 = "p1"
+P2 = "p2"
 START = "start"
 SELECT = "select"
 ESC = "escape"
@@ -15,9 +15,9 @@ UP = "up"
 RIGHT = "right"
 DOWN = "down"
 LEFT = "Left"
-BULL = "B"
-TRIPLE = "T"
-DOUBLE = "D"
+BULL = "25"
+TRIPLE = "3"
+DOUBLE = "2"
 TWENTY = "20"
 NINETEEN = "19"
 EIGHTEEN = "18"
@@ -25,8 +25,12 @@ SEVENTEEN = "17"
 SIXTEEN = "16"
 FIFTEEN = "15"
 FOURTEEN = "14"
+NUMBER = "number"
+TACTICAL = "tactical"
+MENU = "menu"
+JOYSTICK = "joystick"
 
-#COLOR   (R, G, B)
+# COLOR   (R, G, B)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
 NAVYBLUE = (60, 60, 100)
@@ -39,7 +43,6 @@ ORANGE = (255, 128, 0)
 PURPLE = (255, 0, 255)
 CYAN = (0, 255, 255)
 
-INITARRAY = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
 
 # VARIABLES
 
@@ -64,6 +67,7 @@ grid_offset = 8
 p1_pos = (col_score + round(col_mark / 2), round(row_top / 2) + grid_offset)
 p2_pos = (screen_width - col_score - round(col_mark / 2), round(row_top / 2) + grid_offset)
 round_pos = (round(screen_width / 2), round(row_top / 2) + grid_offset)
+round_txt_pos = (round(screen_width / 2), grid_offset)
 p1_score_pos = (round(col_score / 2), round(row_top / 2) + grid_offset)
 p2_score_pos = (round(screen_width - (col_score / 2)), round(row_top / 2) + grid_offset)
 twenty_pos = (round(screen_width / 2), row_top + 0 * row_height + round(row_height / 2) + grid_offset)
@@ -85,26 +89,36 @@ if fullscreen:
 else:
     screen = pygame.display.set_mode((screen_width, screen_height))
 
+#  TODO add too the parameter file the font variables
 pygame.display.set_caption("SLOP TACTICS CRICKET")
 font = pygame.font.Font("HyningsHandwriting-Regular.ttf", 72)  # about screenHeight/20 - grid text
 fontBig = pygame.font.Font("HyningsHandwriting-Regular.ttf", 72)  # about screenHeight/15 - final result text
 fontScoreHist = pygame.font.Font("HyningsHandwriting-Regular.ttf", 40)  # about screenHeight/40 - score history
-fontDebug = pygame.font.SysFont("arial", 16)  # about screenHeight/80
+fontInfo = pygame.font.SysFont("HyningsHandwriting-Regular.ttf", 24)  # about screenHeight/80
 
-player1 = True
+player1 = True  # to be replaced by current_player
+current_player = 0  # 0 for player 1, 1 for player 2 - i.e. the playerMatrix row
+sitting_player = 1
 scoreMultiplier = 1
 currentRound = 1
 prevTot1 = 0
 prevTot2 = 0
 
 # 20-14, D, T, B, score, score count
-playerMatrix = INITARRAY
+INITARRAY = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])  # for restart test
+playerMatrix = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
+# 20-14, D, T, B, total score, score count
+players_array = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
+player_one_scores = np.array([0])  #  for individual scores
+player_two_scores = np.array([0])
+
+targets_order = [TWENTY, NINETEEN, EIGHTEEN, SEVENTEEN, SIXTEEN, FIFTEEN, FOURTEEN, DOUBLE, TRIPLE, BULL]
 
 done = False
 gameon = True
 
 clock = pygame.time.Clock()
-screen.fill((255, 255, 255))
+# screen.fill((255, 255, 255))
 
 
 # FUNCTIONS
@@ -186,8 +200,79 @@ def check_input(ci_event, test):
     return False
 
 
+def validate_input(ci_event):
+    if ci_event.type == pygame.KEYUP:
+        if ci_event.key == pygame.K_SPACE:
+            return True, START, MENU
+        if ci_event.key == pygame.K_RETURN:
+            return True, SELECT, MENU
+        if ci_event.key == pygame.K_UP:
+            return True, UP, JOYSTICK
+        if ci_event.key == pygame.K_RIGHT:
+            return True, RIGHT, JOYSTICK
+        if ci_event.key == pygame.K_DOWN:
+            return True, DOWN, JOYSTICK
+        if ci_event.key == pygame.K_LEFT:
+            return True, LEFT, JOYSTICK
+        if ci_event.key == pygame.K_1:
+            return True, BULL, NUMBER
+        if ci_event.key == pygame.K_3:
+            return True, TRIPLE, TACTICAL
+        if ci_event.key == pygame.K_2:
+            return True, DOUBLE, TACTICAL
+        if ci_event.key == pygame.K_0:
+            return True, TWENTY, NUMBER
+        if ci_event.key == pygame.K_9:
+            return True, NINETEEN, NUMBER
+        if ci_event.key == pygame.K_8:
+            return True, EIGHTEEN, NUMBER
+        if ci_event.key == pygame.K_7:
+            return True, SEVENTEEN, NUMBER
+        if ci_event.key == pygame.K_6:
+            return True, SIXTEEN, NUMBER
+        if ci_event.key == pygame.K_5:
+            return True, FIFTEEN, NUMBER
+        if ci_event.key == pygame.K_4:
+            return True, FOURTEEN, NUMBER
+    if ci_event.type == pygame.JOYBUTTONUP:  # USING A GENERIC USB JOYSTICK
+        if ci_event.button == 0:  # K1
+            return True, TWENTY, NUMBER
+        if ci_event.button == 1:  # K2
+            return True, BULL, NUMBER
+        if ci_event.button == 2:  # K3
+            return True, DOUBLE, TACTICAL
+        if ci_event.button == 3:  # K4
+            return True, TRIPLE, TACTICAL
+        if ci_event.button == 4:  # L2
+            return True, FOURTEEN, NUMBER
+        if ci_event.button == 5:  # R2
+            return True, FIFTEEN, NUMBER
+        if ci_event.button == 6:  # L1
+            return True, SIXTEEN, NUMBER
+        if ci_event.button == 7:  # R1
+            return True, SEVENTEEN, NUMBER
+        if ci_event.button == 8:  # SE
+            return True, EIGHTEEN, NUMBER
+        if ci_event.button == 9:  # ST
+            return True, NINETEEN, NUMBER
+        if ci_event.button == 10:  # K11
+            return True, START, MENU
+        if ci_event.button == 11:  # K12
+            return True, SELECT, MENU
+    if ci_event.type == pygame.JOYAXISMOTION:
+        if ci_event.axis == 0 and ci_event.value < -JVT:  # DOWN
+            return True, DOWN, JOYSTICK
+        if ci_event.axis == 0 and ci_event.value > JVT:  # UP
+            return True, UP, JOYSTICK
+        if ci_event.axis == 1 and ci_event.value < -JVT:  # LEFT
+            return True, LEFT, JOYSTICK
+        if ci_event.axis == 1 and ci_event.value > JVT:  # RIGHT
+            return True, RIGHT, JOYSTICK
+    return False, "none", "na"
+
+
 def get_target_index(t):
-    target_order = ["20", "19", "18", "17", "16", "15", "14", "D", "T", "B"]
+    target_order = ["20", "19", "18", "17", "16", "15", "14", "2", "3", "25"]
     return target_order.index(t)
 
 
@@ -201,6 +286,15 @@ def get_player_target_success(p1, t):
 def target_center(p1, t):
     tc_y = row_top - row_height + round((get_target_index(t) + 1.5) * row_height)
     if p1:
+        tc_x = round(col_score + col_mark / 2)
+    else:
+        tc_x = round(screen_width - col_score - col_mark / 2)
+    return int(tc_x), int(tc_y)
+
+
+def target_center_new(p1, t):
+    tc_y = row_top - row_height + round((get_target_index(t) + 1.5) * row_height)
+    if p1 == 0:
         tc_x = round(col_score + col_mark / 2)
     else:
         tc_x = round(screen_width - col_score - col_mark / 2)
@@ -258,10 +352,10 @@ def score_player_throw(p1, t, sm):
     x_center = int(round(screen_width / 2))
     radius = int(round(col_mark * .4))
 
-    if get_player_target_success(p1, t) > 0:
+    if get_player_target_success(p1, t) > 0:  # if the player has not closed the target
         update_player_matrix(p1, t)
         add_mark(p1, t)
-    elif get_player_target_success(not p1, t) > 0:
+    elif get_player_target_success(not p1, t) > 0:  # if target closed, check if the other player has closed
         if t == "D":
             # print("Double Scoring")
             pygame.draw.circle(screen, (0, 0, 0), (x_center, y_double), radius, 2)
@@ -471,7 +565,7 @@ def init_score_board():
     pygame.draw.line(screen, (0, 0, 0,), (0, row_top + 2), (screen_width, row_top + 2), 1)
     pygame.draw.line(screen, (0, 0, 0,), (0, row_top), (screen_width, row_top), 1)
 
-    # Target
+    # Targets
     screen.blit(*text_blit(P1, font, BLACK, p1_pos))
     screen.blit(*text_blit(TWENTY, font, BLACK, twenty_pos))
     screen.blit(*text_blit(NINETEEN, font, BLACK, nineteen_pos))
@@ -534,41 +628,114 @@ while gameon:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 done = True
                 gameon = False
-            if check_input(event, DOWN):
-                player1 = not player1
-                change_player(player1)
-                scoreMultiplier = 1
-                if player1:
-                    currentRound = currentRound + 1
-                    update_round(currentRound)
+            # if check_input(event, DOWN):
+            #     player1 = not player1  # to be removed
+            #     if current_player == 0:
+            #         current_player = 1
+            #         sitting_player = 0
+            #     else:
+            #         current_player = 0
+            #         sitting_player = 1
+            #     change_player(player1)
+            #     scoreMultiplier = 1
+            #     if player1:
+            #         currentRound = currentRound + 1
+            #         update_round(currentRound)
 
-            if check_input(event, TWENTY):
-                score_player_throw(player1, TWENTY, scoreMultiplier)
-            if check_input(event, NINETEEN):
-                score_player_throw(player1, NINETEEN, scoreMultiplier)
-            if check_input(event, EIGHTEEN):
-                score_player_throw(player1, EIGHTEEN, scoreMultiplier)
-            if check_input(event, SEVENTEEN):
-                score_player_throw(player1, SEVENTEEN, scoreMultiplier)
-            if check_input(event, SIXTEEN):
-                score_player_throw(player1, SIXTEEN, scoreMultiplier)
-            if check_input(event, FIFTEEN):
-                score_player_throw(player1, FIFTEEN, scoreMultiplier)
-            if check_input(event, FOURTEEN):
-                score_player_throw(player1, FOURTEEN, scoreMultiplier)
-            if check_input(event, TRIPLE):
-                score_player_throw(player1, TRIPLE, scoreMultiplier)
-            if check_input(event, DOUBLE):
-                score_player_throw(player1, DOUBLE, scoreMultiplier)
-            if check_input(event, BULL):
-                score_player_throw(player1, BULL, scoreMultiplier)
+            # if check_input(event, TWENTY):
+            #     score_player_throw(player1, TWENTY, scoreMultiplier)
+            #     if scoreMultiplier == 1:
+            #         if players_array[current_player, get_target_index(TWENTY)] > 0:  # if the player has not closed
+            #             players_array[current_player, get_target_index(TWENTY)] -= 1
+            #         elif players_array[sitting_player, get_target_index(TWENTY)] > 0:  # if opponent has not closed
+            #             players_array[current_player, 10] += 20
+            #             players_array[current_player, 11] += 1
+            #     else:
+            #         players_array[current_player, 10] += 20 * scoreMultiplier
+            #         scoreMultiplier = 1
+            # if check_input(event, NINETEEN):
+            #     score_player_throw(player1, NINETEEN, scoreMultiplier)
+            #     if scoreMultiplier == 1:
+            #         if players_array[current_player, get_target_index(NINETEEN)] > 0:  # if the player has not closed
+            #             players_array[current_player, get_target_index(NINETEEN)] -= 1
+            #         elif players_array[sitting_player, get_target_index(NINETEEN)] > 0:  # if opponent has not closed
+            #             players_array[current_player, 10] += int(NINETEEN)
+            #             players_array[current_player, 11] += 1
+            #     else:
+            #         players_array[current_player, 10] += int(NINETEEN) * scoreMultiplier
+            #         scoreMultiplier = 1
+            # if check_input(event, EIGHTEEN):
+            #     score_player_throw(player1, EIGHTEEN, scoreMultiplier)
+            # if check_input(event, SEVENTEEN):
+            #     score_player_throw(player1, SEVENTEEN, scoreMultiplier)
+            # if check_input(event, SIXTEEN):
+            #     score_player_throw(player1, SIXTEEN, scoreMultiplier)
+            # if check_input(event, FIFTEEN):
+            #     score_player_throw(player1, FIFTEEN, scoreMultiplier)
+            # if check_input(event, FOURTEEN):
+            #     score_player_throw(player1, FOURTEEN, scoreMultiplier)
+            # if check_input(event, TRIPLE):
+            #     # score_player_throw(player1, TRIPLE, scoreMultiplier)
+            #     if scoreMultiplier == 1:
+            #         if players_array[current_player, get_target_index(TRIPLE)] > 0:  # if the player has not closed
+            #             players_array[current_player, get_target_index(TRIPLE)] -= 1
+            #         elif players_array[sitting_player, get_target_index(TRIPLE)] > 0:  # if opponent has not closed
+            #             scoreMultiplier = 3
+            # if check_input(event, DOUBLE):
+            #     score_player_throw(player1, DOUBLE, scoreMultiplier)
+            # if check_input(event, BULL):
+            #     score_player_throw(player1, BULL, scoreMultiplier)
+
+            valid_input, input_value, input_type = validate_input(event)
+
+            if valid_input and input_type == NUMBER:
+                if scoreMultiplier == 1:
+                    if players_array[current_player, get_target_index(input_value)] > 0:  # if the player has not closed
+                        players_array[current_player, get_target_index(input_value)] -= 1
+                    elif players_array[sitting_player, get_target_index(input_value)] > 0:  # if opponent has not closed
+                        players_array[current_player, 10] += int(input_value)
+                        players_array[current_player, 11] += 1
+                else:
+                    players_array[current_player, 10] += int(input_value) * scoreMultiplier
+                    scoreMultiplier = 1
+
+            if valid_input and input_type == TACTICAL:
+                # score_player_throw(player1, TRIPLE, scoreMultiplier)
+                if scoreMultiplier == 1:
+                    if players_array[current_player, get_target_index(input_value)] > 0:  # if the player has not closed
+                        players_array[current_player, get_target_index(input_value)] -= 1
+                    elif players_array[sitting_player, get_target_index(input_value)] > 0:  # if opponent has not closed
+                        scoreMultiplier = int(input_value)
+
+            if valid_input and input_type == JOYSTICK:
+                if scoreMultiplier == 1 and input_value == DOWN:
+                    # player1 = not player1  # to be removed
+                    if current_player == 0:
+                        current_player = 1
+                        sitting_player = 0
+                    else:
+                        current_player = 0
+                        sitting_player = 1
+                        currentRound += 1
+                    # change_player(player1)
+                    scoreMultiplier = 1
+                    # if player1:
+                    #     currentRound = currentRound + 1
+                    #     update_round(currentRound)
+
+            if valid_input:
+                print("validate:", valid_input, input_value, input_type)
+                #print(event)
+                print(players_array)
+                print("player:", current_player)
+
             if check_input(event, START):
 
-                # todo ask for confirmation or activate on game end only
-                # reset variable (python references variables...)
                 if confirm_restart():
+                    # reset variable (python references variables...)
                     playerMatrix = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
                     player1 = True
+                    current_player = 0
                     currentRound = 1
                     scoreMultiplier = 1
                     print("Start button pressed")
@@ -587,8 +754,43 @@ while gameon:
 
             check_winner()
             update_score_screen(player1)
-            pygame.display.flip()
 
+
+            # REFRESH DISPLAY
+            # init_score_board()
+            # print(event)
+            # print(playerMatrix, players_array)
+            # print(current_player)
+            screen.blit(*text_blit(str(currentRound), font, ORANGE, round_pos))
+            screen.blit(*text_blit("round", fontInfo, GRAY, round_txt_pos))
+            screen.blit(*text_blit(str(players_array[0, 10]), font, ORANGE, p1_score_pos))
+            screen.blit(*text_blit(str(players_array[1, 10]), font, ORANGE, p2_score_pos))
+            if current_player == 0:
+                screen.blit(*text_blit(P1, font, ORANGE, p1_pos))
+            if current_player == 1:
+                screen.blit(*text_blit(P2, font, ORANGE, p2_pos))
+            for t in range(10):
+                for p in range(2):
+                    #  x_target, y_target = target_center_new(p, t+1)
+                    y_target = int(row_top - row_height + round((t + 1.5) * row_height))
+                    x_target = int(round(p * screen_width + (1 - 2 * p) * col_score + (1 - 2 * p) * col_mark / 2))
+                    #print(t, p, x_target, y_target)
+                    #print(player_one_scores)
+                    if players_array[p, t] < 3:
+                        # print("draw first line")
+                        pygame.draw.line(screen, ORANGE,
+                                        (x_target - round(col_mark / 3), y_target + round(row_height / 3)),
+                                        (x_target + round(col_mark / 3), y_target - round(row_height / 3)), 8)
+                    if players_array[p, t] < 2:
+                        # print("draw second line")
+                        pygame.draw.line(screen, ORANGE,
+                                        (x_target - round(col_mark / 3), y_target - round(row_height / 3)),
+                                        (x_target + round(col_mark / 3), y_target + round(row_height / 3)), 8)
+                    if players_array[p, t] < 1:
+                        # print("draw third line")
+                        pygame.draw.circle(screen, ORANGE, (x_target, y_target),
+                                           int(round(min(col_mark, row_height) / 2) - 5), 6)
+            pygame.display.flip()
     # ---------------------------------------------
     # logfile.close()
 
