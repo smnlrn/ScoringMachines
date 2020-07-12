@@ -16,8 +16,11 @@ RIGHT = "right"
 DOWN = "down"
 LEFT = "Left"
 BULL = "25"
+BULL_TEXT = "B"
 TRIPLE = "3"
+TRIPLE_TEXT = "T"
 DOUBLE = "2"
+DOUBLE_TEXT = "D"
 TWENTY = "20"
 NINETEEN = "19"
 EIGHTEEN = "18"
@@ -82,6 +85,7 @@ triple_pos = (round(screen_width / 2), row_top + 8 * row_height + round(row_heig
 bull_pos = (round(screen_width / 2), row_top + 9 * row_height + round(row_height / 2) + grid_offset)
 
 result_pos = (round(screen_width / 2), round(screen_height / 2))
+result_pos_info = (round(screen_width / 2), round(screen_height / 80 * 43))  # todo more robust position...
 result_rect = (0, round(screen_height / 20 * 9), screen_width, round(screen_height / 10))
 
 if fullscreen:
@@ -103,14 +107,15 @@ scoreMultiplier = 1
 currentRound = 1
 prevTot1 = 0
 prevTot2 = 0
+other_target = 1
 
 # 20-14, D, T, B, score, score count
 INITARRAY = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])  # for restart test
 playerMatrix = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
 # 20-14, D, T, B, total score, score count
 players_array = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
-player_one_scores = np.array([0])  #  for individual scores
-player_two_scores = np.array([0])
+player_one_scores = np.empty(0)  #  for individual scores
+player_two_scores = np.array([])
 
 targets_order = [TWENTY, NINETEEN, EIGHTEEN, SEVENTEEN, SIXTEEN, FIFTEEN, FOURTEEN, DOUBLE, TRIPLE, BULL]
 
@@ -390,14 +395,14 @@ def change_player(p1):
         screen.blit(*text_blit(P2, font, BLACK, p2_pos))
 
 
-def check_winner():
-    if playerMatrix[0, 0:10].sum() == 0 and playerMatrix[0, 10] > playerMatrix[1, 10]:
+def check_winner(p_array):
+    if p_array[0, 0:10].sum() == 0 and p_arrayx[0, 10] > p_array[1, 10]:
         pygame.draw.rect(screen, WHITE, result_rect)
         screen.blit(*text_blit("Player 1 WINS!", fontBig, RED, result_pos))
-    elif playerMatrix[1, 0:10].sum() == 0 and playerMatrix[0, 10] < playerMatrix[1, 10]:
+    elif p_array[1, 0:10].sum() == 0 and p_array[0, 10] < p_array[1, 10]:
         pygame.draw.rect(screen, WHITE, result_rect)
         screen.blit(*text_blit("Player 2 WINS!", fontBig, RED, result_pos))
-    elif playerMatrix[:, 0:10].sum() == 0 and playerMatrix[0, 10] == playerMatrix[1, 10]:
+    elif p_array[:, 0:10].sum() == 0 and p_array[0, 10] == p_array[1, 10]:
         pygame.draw.rect(screen, WHITE, result_rect)
         screen.blit(*text_blit("DRAW!", fontBig, RED, result_pos))
 
@@ -551,22 +556,22 @@ def add_score_detail(p1, score, n):
 def init_score_board():
     screen.fill((255, 255, 255))
     # column Grid
-    pygame.draw.line(screen, (0, 0, 0,), (col_score, 0), (col_score, screen_height), 1)
-    pygame.draw.line(screen, (0, 0, 0,), (col_score + col_mark, 0), (col_score + col_mark, screen_height), 1)
-    pygame.draw.line(screen, (0, 0, 0,), (col_score + col_mark + col_target, 0),
+    pygame.draw.line(screen, BLACK, (col_score, 0), (col_score, screen_height), 1)
+    pygame.draw.line(screen, BLACK, (col_score + col_mark, 0), (col_score + col_mark, screen_height), 1)
+    pygame.draw.line(screen, BLACK, (col_score + col_mark + col_target, 0),
                      (col_score + col_mark + col_target, screen_height), 1)
-    pygame.draw.line(screen, (0, 0, 0,), (col_score + 2 * col_mark + col_target, 0),
+    pygame.draw.line(screen, BLACK, (col_score + 2 * col_mark + col_target, 0),
                      (col_score + 2 * col_mark + col_target, screen_height), 1)
     # Row Grid
     for r in range(1, 10):
-        pygame.draw.line(screen, (0, 0, 0,), (col_score, row_top + r * row_height),
+        pygame.draw.line(screen, BLACK, (col_score, row_top + r * row_height),
                          (screen_width - col_score, row_top + r * row_height), 1)
         # Draw double first line
-    pygame.draw.line(screen, (0, 0, 0,), (0, row_top + 2), (screen_width, row_top + 2), 1)
-    pygame.draw.line(screen, (0, 0, 0,), (0, row_top), (screen_width, row_top), 1)
+    pygame.draw.line(screen, BLACK, (0, row_top + 2), (screen_width, row_top + 2), 1)
+    pygame.draw.line(screen, BLACK, (0, row_top), (screen_width, row_top), 1)
 
     # Targets
-    screen.blit(*text_blit(P1, font, BLACK, p1_pos))
+    # screen.blit(*text_blit(P1, font, BLACK, p1_pos))
     screen.blit(*text_blit(TWENTY, font, BLACK, twenty_pos))
     screen.blit(*text_blit(NINETEEN, font, BLACK, nineteen_pos))
     screen.blit(*text_blit(EIGHTEEN, font, BLACK, eighteen_pos))
@@ -574,9 +579,9 @@ def init_score_board():
     screen.blit(*text_blit(SIXTEEN, font, BLACK, sixteen_pos))
     screen.blit(*text_blit(FIFTEEN, font, BLACK, fifteen_pos))
     screen.blit(*text_blit(FOURTEEN, font, BLACK, fourteen_pos))
-    screen.blit(*text_blit(DOUBLE, font, BLACK, double_pos))
-    screen.blit(*text_blit(TRIPLE, font, BLACK, triple_pos))
-    screen.blit(*text_blit(BULL, font, BLACK, bull_pos))
+    screen.blit(*text_blit(DOUBLE_TEXT, font, BLACK, double_pos))
+    screen.blit(*text_blit(TRIPLE_TEXT, font, BLACK, triple_pos))
+    screen.blit(*text_blit(BULL_TEXT, font, BLACK, bull_pos))
 
     screen.blit(*text_blit(str(currentRound), font, BLACK, round_pos))
 
@@ -592,8 +597,11 @@ def init_score_board():
 
 def confirm_restart():
     #pygame.draw.rect(screen, WHITE, result_rect)
-    pygame.draw.rect(screen, WHITE, (0, 0, screen_width, round(screen_height / 12)))
-    screen.blit(*text_blit("Confirm restart", fontBig, RED, (round(screen_width / 2), round(screen_height / 20))))
+    pygame.draw.rect(screen, WHITE, result_rect)
+    screen.blit(*text_blit("Confirm restart", fontBig, RED, result_pos))
+    screen.blit(*text_blit("START to confirm, SELECT to cancel", fontInfo, GRAY, result_pos_info))
+    #pygame.draw.rect(screen, WHITE, (0, 0, screen_width, round(screen_height / 12)))
+    #screen.blit(*text_blit("Confirm restart", fontBig, RED, (round(screen_width / 2), round(screen_height / 20))))
     pygame.display.flip()
     restart = True
     while restart:
@@ -695,8 +703,18 @@ while gameon:
                     elif players_array[sitting_player, get_target_index(input_value)] > 0:  # if opponent has not closed
                         players_array[current_player, 10] += int(input_value)
                         players_array[current_player, 11] += 1
+                        if current_player == 0:
+                            player_one_scores = np.append(player_one_scores, int(input_value))
+                        else:
+                            player_two_scores = np.append(player_two_scores, int(input_value))
                 else:
                     players_array[current_player, 10] += int(input_value) * scoreMultiplier
+                    if current_player == 0:
+                        # print("player one scores update")
+                        player_one_scores = np.append(player_one_scores, int(input_value) * scoreMultiplier)
+                    else:
+                        # print("player two scores update")
+                        player_two_scores = np.append(player_two_scores, int(input_value) * scoreMultiplier)
                     scoreMultiplier = 1
 
             if valid_input and input_type == TACTICAL:
@@ -722,26 +740,38 @@ while gameon:
                     # if player1:
                     #     currentRound = currentRound + 1
                     #     update_round(currentRound)
-
-            if valid_input:
-                print("validate:", valid_input, input_value, input_type)
-                #print(event)
-                print(players_array)
-                print("player:", current_player)
+                elif scoreMultiplier > 1:
+                    if input_value == LEFT:
+                        other_target += 1
+                    if input_value == RIGHT:
+                        other_target += 4
+                    if input_value == UP:
+                        other_target *= 2
+                    if other_target > 13:
+                        other_target = 1
+                    if input_value == DOWN:
+                        players_array[current_player, 10] += other_target * scoreMultiplier
+                        players_array[current_player, 11] += 1
+                        if current_player == 0:
+                            player_one_scores = np.append(player_one_scores, int(other_target * scoreMultiplier))
+                        else:
+                            player_two_scores = np.append(player_two_scores, int(other_target * scoreMultiplier))
+                        scoreMultiplier = 1
+                        other_target = 1
 
             if check_input(event, START):
-
                 if confirm_restart():
                     # reset variable (python references variables...)
-                    playerMatrix = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
+                    players_array = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0]])
                     player1 = True
                     current_player = 0
+                    sitting_player = 1
                     currentRound = 1
                     scoreMultiplier = 1
                     print("Start button pressed")
                     # redraw screen
-                    pygame.display.flip()
-                    done = True
+                    #pygame.display.flip()
+                    #done = True
 
             if check_input(event, SELECT):  # X/oops/correction button
                 comparison = playerMatrix == INITARRAY  # arrays cannot be compared directly with ==
@@ -752,23 +782,38 @@ while gameon:
                 else:
                     score_correction(player1)
 
-            check_winner()
-            update_score_screen(player1)
-
-
+            #check_winner(players_array)
+            #update_score_screen(player1)
+            # ----------------------------------------------------------
+            if valid_input:
+                print("validate:", valid_input, input_value, input_type)
+                #print(event)
+                print(players_array)
+                print(player_one_scores, player_two_scores)
+                print("player:", current_player)
+            # -----------------------------------------------------------
             # REFRESH DISPLAY
-            # init_score_board()
+            init_score_board()
             # print(event)
             # print(playerMatrix, players_array)
             # print(current_player)
-            screen.blit(*text_blit(str(currentRound), font, ORANGE, round_pos))
-            screen.blit(*text_blit("round", fontInfo, GRAY, round_txt_pos))
+
+            if scoreMultiplier == 1:
+                screen.blit(*text_blit("round", fontInfo, GRAY, round_txt_pos))
+                screen.blit(*text_blit(str(currentRound), font, ORANGE, round_pos))
+            if scoreMultiplier == 2:
+                screen.blit(*text_blit("doubling", fontInfo, GRAY, round_txt_pos))
+                screen.blit(*text_blit(str(other_target), font, ORANGE, round_pos))
+            if scoreMultiplier == 3:
+                screen.blit(*text_blit("tripling", fontInfo, GRAY, round_txt_pos))
+                screen.blit(*text_blit(str(other_target), font, ORANGE, round_pos))
             screen.blit(*text_blit(str(players_array[0, 10]), font, ORANGE, p1_score_pos))
             screen.blit(*text_blit(str(players_array[1, 10]), font, ORANGE, p2_score_pos))
             if current_player == 0:
                 screen.blit(*text_blit(P1, font, ORANGE, p1_pos))
             if current_player == 1:
                 screen.blit(*text_blit(P2, font, ORANGE, p2_pos))
+            # Add target marks
             for t in range(10):
                 for p in range(2):
                     #  x_target, y_target = target_center_new(p, t+1)
@@ -790,6 +835,46 @@ while gameon:
                         # print("draw third line")
                         pygame.draw.circle(screen, ORANGE, (x_target, y_target),
                                            int(round(min(col_mark, row_height) / 2) - 5), 6)
+            # Add individual scores
+            for idx, s in enumerate(player_one_scores):
+                #print("Score hist:", s, idx)
+                cc = 3 if idx < 20 else 1
+                #mark = fontScoreHist.render(str(s), True, BLACK)
+                p_one_x = round(cc * col_score / 4)
+                p_one_y = row_top + round((idx % 20 + 1) * row_height / 2 - row_height / 5)
+                screen.blit(*text_blit(str(int(s)), fontScoreHist, ORANGE, (p_one_x, p_one_y)))
+            for idx, s in enumerate(player_two_scores):
+                #print("Score hist:", s, idx)
+                cc = 3 if idx < 20 else 1
+                #mark = fontScoreHist.render(str(s), True, BLACK)
+                p_two_x = round(screen_width - cc * col_score / 4)
+                p_two_y = row_top + round((idx % 20 + 1) * row_height / 2 - row_height / 5)
+                screen.blit(*text_blit(str(int(s)), fontScoreHist, ORANGE, (p_two_x, p_two_y)))
+                # mark = fontScoreHist.render(str(score), True, (0, 0, 0))
+                # cc = 3 if n <= 20 else 1  # start with colonne interieure, ensuite exterieure
+                # if n < 41:
+                #     if p1:
+                #         asd_x = round(cc * col_score / 4 - mark.get_width() / 2)
+                #         # x = round((m.floor(n/21)+1) * colScore/4 - mark.get_width()/2)
+                #         asd_y = row_top + round(((n - 1) % 20) * row_height / 2) + round(
+                #             (row_height - mark.get_height()) / 8)
+                #         screen.blit(mark, (asd_x, asd_y))
+                #     else:
+                #         asd_x = round(screen_width - cc * col_score / 4 - mark.get_width() / 2)
+                #         asd_y = row_top + round(((n - 1) % 20) * row_height / 2) + round(
+                #             (row_height - mark.get_height()) / 8)
+                #         screen.blit(mark, (asd_x, asd_y))
+
+            # Check winner
+            if players_array[0, 0:10].sum() == 0 and players_array[0, 10] > players_array[1, 10]:
+                pygame.draw.rect(screen, WHITE, result_rect)
+                screen.blit(*text_blit("Player 1 WINS!", fontBig, RED, result_pos))
+            elif players_array[1, 0:10].sum() == 0 and players_array[0, 10] < players_array[1, 10]:
+                pygame.draw.rect(screen, WHITE, result_rect)
+                screen.blit(*text_blit("Player 2 WINS!", fontBig, RED, result_pos))
+            elif players_array[:, 0:10].sum() == 0 and players_array[0, 10] == players_array[1, 10]:
+                pygame.draw.rect(screen, WHITE, result_rect)
+                screen.blit(*text_blit("DRAW!", fontBig, RED, result_pos))
             pygame.display.flip()
     # ---------------------------------------------
     # logfile.close()
