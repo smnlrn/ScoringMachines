@@ -11,7 +11,6 @@ P1 = "p1"
 P2 = "p2"
 START = "start"
 SELECT = "select"
-ESC = "escape"
 UP = "up"
 RIGHT = "right"
 DOWN = "down"
@@ -390,7 +389,7 @@ while game_on:
                 print(player_one_scores, player_two_scores)
                 print("player:", current_player)
             # -----------------------------------------------------------------
-            # REFRESH DISPLAY
+            # BUILD AND REFRESH DISPLAY
             # -----------------------------------------------------------------
             init_score_board()
             # TOP ROW ---------------------------------------------------------
@@ -441,7 +440,6 @@ while game_on:
                 p_two_x = round(screen_width - cc * col_score / 4)
                 p_two_y = row_top + round((idx % 20 + 1) * row_height / 2 - row_height / 5)
                 screen.blit(*text_blit(str(int(s)), fontScoreHist, CLR_SCORES, (p_two_x, p_two_y)))
-
             # CHECK WINNER ----------------------------------------------------
             if players_array[0, 0:10].sum() == 0 and players_array[0, 10] > players_array[1, 10]:
                 pygame.draw.rect(screen, CLR_BOX, result_rect)
@@ -452,6 +450,6 @@ while game_on:
             elif players_array[:, 0:10].sum() == 0 and players_array[0, 10] == players_array[1, 10]:
                 pygame.draw.rect(screen, CLR_BOX, result_rect)
                 screen.blit(*text_blit("DRAW!", fontBig, CLR_MESSAGE, result_pos))
+            # REFRESH ---------------------------------------------------------
             pygame.display.flip()
-            # -----------------------------------------------------------------
 pygame.quit()
