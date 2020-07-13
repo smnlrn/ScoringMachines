@@ -310,6 +310,7 @@ while game_on:
             # TACTICAL SCORING
             # -----------------------------------------------------------------
             if valid_input and input_type == TACTICAL:
+                other_target = 1
                 if scoreMultiplier == 1:
                     if players_array[current_player, get_target_index(input_value)] > 0:  # if not closed
                         players_array[current_player, get_target_index(input_value)] -= 1
@@ -349,14 +350,12 @@ while game_on:
                         else:
                             player_two_scores = np.append(player_two_scores, int(other_target * scoreMultiplier))
                         scoreMultiplier = 1
-                        other_target = 1
             # -----------------------------------------------------------------
             # MENU LOGIC
             # -----------------------------------------------------------------
             if valid_input and input_type == MENU and input_value == START:
                 if scoreMultiplier != 1:  # exit from special scoring modes
                     scoreMultiplier = 1
-                    other_target = 1
                 elif confirm_restart():
                     # reset variable (python references variables...)
                     players_array = np.array([[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0],
@@ -369,7 +368,6 @@ while game_on:
                     scoreMultiplier = 1
 
             if valid_input and input_type == MENU and input_value == SELECT:
-                # if check_input(event, SELECT):  # X/oops/correction button
                 # todo if at beginning of game; exit program - test purposes only
                 comparison = players_array == INITARRAY  # arrays cannot be compared directly with ==
                 equal_arrays = comparison.all()
@@ -377,17 +375,20 @@ while game_on:
                     done = True
                     game_on = False
                 else:
+                    other_target = 1
                     scoreMultiplier = -1
 
             # -----------------------------------------------------------------
             # DEBUGGING
             # -----------------------------------------------------------------
-            if valid_input:
-                print("validate:", valid_input, input_value, input_type)
-                # print(event)
-                print(players_array)
-                print(player_one_scores, player_two_scores)
-                print("player:", current_player)
+            # if valid_input:
+            #     print("validate:", valid_input, input_value, input_type)
+            #     # print(event)
+            #     print(players_array)
+            #     print(player_one_scores, player_two_scores)
+            #     print("player:", current_player, sitting_player)
+            #     print("multiplier:", scoreMultiplier)
+            #     print("other target:", other_target)
             # -----------------------------------------------------------------
             # BUILD AND REFRESH DISPLAY
             # -----------------------------------------------------------------
