@@ -52,8 +52,8 @@ CLR_UNDO = (255, 0, 0)
 # VARIABLES
 # -----------------------------------------------------------------------------
 # size of the e-ink 7.5-inch screen : width:384, height:640
-# size for viewsonic : width:576, height:960
-# size for 7inch hdmi lcd (b) - WaveShare w480 h800 (portrait orientation)
+# size for ViewSonic : width:576, height:960
+# size for 7inch HDMI lcd (b) - WaveShare w480 h800 (portrait orientation)
 # -----------------------------------------------------------------------------
 screen_width = smp.screenWidth
 screen_height = smp.screenHeight
@@ -123,9 +123,11 @@ pygame.display.set_caption("SLOP TACTICS CRICKET")
 font = pygame.font.Font("HyningsHandwriting-Regular.ttf", 72)  # about screenHeight/20 - grid text
 fontBig = pygame.font.Font("HyningsHandwriting-Regular.ttf", 72)  # about screenHeight/15 - final result text
 fontScoreHist = pygame.font.Font("HyningsHandwriting-Regular.ttf", 40)  # about screenHeight/40 - score history
-fontInfo = pygame.font.SysFont("HyningsHandwriting-Regular.ttf", 24)  # about screenHeight/80
+fontInfo = pygame.font.Font("HyningsHandwriting-Regular.ttf", 24)  # about screenHeight/80
 
 clock = pygame.time.Clock()
+pygame.mouse.set_visible(0)
+pygame.event.set_blocked([pygame.MOUSEMOTION, pygame.ACTIVEEVENT])
 # -----------------------------------------------------------------------------
 # FUNCTIONS
 # -----------------------------------------------------------------------------
