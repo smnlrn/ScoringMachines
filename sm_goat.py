@@ -141,7 +141,7 @@ pg.display.set_caption("G.O.A.T.")
 police_texte = pg.font.Font(police, 48)  # about screenHeight/20 - grid text
 police_pos = pg.font.Font(police, 36)  # about screenHeight/15 - final result text
 police_entete = pg.font.Font(police, 60)  # about screenHeight/40 - score history
-police_soustitre = pg.font.Font(police, 24)  # about screenHeight/80
+police_soustitre = pg.font.Font(police, 20)  # about screenHeight/80
 police_info = pg.font.Font(police, 16)  # about
 clock = pg.time.Clock()
 # -----------------------------------------------------------------------------
@@ -287,7 +287,6 @@ while main_loop:
                                 lettre_index = 0
                             if input_value == RIGHT:  # INSERT
                                 for r in range(9, srlgn_idx - 3, -1):
-                                    print("insert loop:", r)
                                     jeux_df.iloc[page_index - 1, 2 * r + 3] = \
                                         jeux_df.iloc[page_index - 1, 2 * r + 1]
                                     jeux_df.iloc[page_index - 1, 2 * r + 2] = \
@@ -400,8 +399,9 @@ while main_loop:
     if page_index > 0:
         if srlgn_idx == 0:
             ecran.blit(*text_blit("SELECT to enter/exit update mode",
-                                  police_info, CLR_CARRE, (screen_width / 2, screen_height - 20)))
-
+                                  police_info, CLR_MODIF, (screen_width / 2, screen_height - 20)))
+            ecran.blit(*text_blit("<", police_texte, CLR_CARRE, (20, pos_entete_v)))
+            ecran.blit(*text_blit(">", police_texte, CLR_CARRE, (screen_width - 20, pos_entete_v)))
         if srlgn_idx == 1:  # Titre --------------------------------------
             # 10 carrés gris
             if mode_ecriture:
@@ -414,8 +414,7 @@ while main_loop:
                                   police_info, CLR_CARRE, (screen_width / 2, screen_height - 20)))
         else:
             ecran.blit(*text_blit(jeux_df.Name[page_index - 1], police_entete, CLR_TITLE, (pos_entete_h, pos_entete_v)))
-            ecran.blit(*text_blit("<", police_texte, CLR_CARRE, (20, pos_entete_v)))
-            ecran.blit(*text_blit(">", police_texte, CLR_CARRE, (screen_width - 20, pos_entete_v)))
+
         if srlgn_idx == 2:  # Sous titre ---------------------------------
             if mode_ecriture:
                 pg.draw.rect(ecran, CLR_CARRE, [166, 54, 150, 26])
