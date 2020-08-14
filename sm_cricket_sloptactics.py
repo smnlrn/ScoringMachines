@@ -7,8 +7,8 @@ import sm_cricket_sloptactics_param as smp
 # -----------------------------------------------------------
 JVT = .9  # Joystick Value Threshold
 
-P1 = "p1"
-P2 = "p2"
+P1 = "1"
+P2 = "2"
 START = "start"
 SELECT = "select"
 UP = "up"
@@ -60,6 +60,7 @@ screen_height = smp.screenHeight
 fullscreen = smp.fullscreen
 # messages (language 0:FR, 1:EN)
 lng = 0
+txt_joueur = smp.txt_joueur[lng]
 txt_ronde = smp.txt_ronde[lng]
 txt_double = smp.txt_double[lng]
 txt_triple = smp.txt_triple[lng]
@@ -81,6 +82,8 @@ row_top = screen_height - 10 * row_height
 grid_offset = 8
 p1_pos = (col_score + round(col_mark / 2), round(row_top / 2) + grid_offset)
 p2_pos = (screen_width - col_score - round(col_mark / 2), round(row_top / 2) + grid_offset)
+p1_txt_pos = (col_score + round(col_mark / 2), grid_offset)
+p2_txt_pos = (screen_width - col_score - round(col_mark / 2), grid_offset)
 round_pos = (round(screen_width / 2), round(row_top / 2) + grid_offset)
 round_txt_pos = (round(screen_width / 2), grid_offset)
 p1_score_pos = (round(col_score / 2), round(row_top / 2) + grid_offset)
@@ -424,8 +427,10 @@ while game_on:
             screen.blit(*text_blit(str(players_array[0, 10]), font, CLR_TOTAL, p1_score_pos))  # total score
             screen.blit(*text_blit(str(players_array[1, 10]), font, CLR_TOTAL, p2_score_pos))  # total score
             if current_player == 0:
+                screen.blit(*text_blit(txt_joueur, fontInfo, CLR_INFO, p1_txt_pos))
                 screen.blit(*text_blit(P1, font, CLR_PLAYER, p1_pos))
             if current_player == 1:
+                screen.blit(*text_blit(txt_joueur, fontInfo, CLR_INFO, p2_txt_pos))
                 screen.blit(*text_blit(P2, font, CLR_PLAYER, p2_pos))
             # ADD TARGET MARKS ------------------------------------------------
             for t in range(10):

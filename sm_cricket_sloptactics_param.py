@@ -3,6 +3,7 @@ screenHeight = 800
 fullscreen = False
 # language
 # FR, EN
+txt_joueur = ["joueur", "player"]
 txt_ronde = ["ronde", "round"]
 txt_double = ["double", "double"]
 txt_triple = ["triple", "triple"]
