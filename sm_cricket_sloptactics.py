@@ -67,7 +67,6 @@ txt_triple = smp.txt_triple[lng]
 txt_corr = smp.txt_corr[lng]
 txt_1gagne = smp.txt_1gagne[lng]
 txt_2gagne = smp.txt_2gagne[lng]
-txt_egal = smp.txt_egal[lng]
 txt_dem = smp.txt_dem[lng]
 txt_dem_info = smp.txt_dem_info[lng]
 
@@ -261,7 +260,7 @@ def init_score_board():
 def confirm_restart():
     pygame.draw.rect(screen, CLR_BOX, result_rect)
     screen.blit(*text_blit(txt_dem, fontBig, CLR_MESSAGE, result_pos))
-    screen.blit(*text_blit(txt_dem_info, fontInfo, CLR_INFO, result_pos_info))
+    screen.blit(*text_blit(txt_dem_info, fontInfo, CLR_TACTICS, result_pos_info))
     pygame.display.flip()
     restart = True
     while restart:  # stay in loop as long as a MENU button is pressed
@@ -460,15 +459,15 @@ while game_on:
                 p_two_y = row_top + round((idx % 20 + 1) * row_height / 2 - row_height / 5)
                 screen.blit(*text_blit(str(int(s)), fontScoreHist, CLR_SCORES, (p_two_x, p_two_y)))
             # CHECK WINNER ----------------------------------------------------
-            if players_array[0, 0:10].sum() == 0 and players_array[0, 10] > players_array[1, 10]:
+            if players_array[0, 0:10].sum() == 0 and players_array[0, 10] >= players_array[1, 10]:
                 pygame.draw.rect(screen, CLR_BOX, result_rect)
                 screen.blit(*text_blit(txt_1gagne, fontBig, CLR_MESSAGE, result_pos))
-            elif players_array[1, 0:10].sum() == 0 and players_array[0, 10] < players_array[1, 10]:
+            elif players_array[1, 0:10].sum() == 0 and players_array[0, 10] <= players_array[1, 10]:
                 pygame.draw.rect(screen, CLR_BOX, result_rect)
                 screen.blit(*text_blit(txt_2gagne, fontBig, CLR_MESSAGE, result_pos))
-            elif players_array[:, 0:10].sum() == 0 and players_array[0, 10] == players_array[1, 10]:
-                pygame.draw.rect(screen, CLR_BOX, result_rect)
-                screen.blit(*text_blit(txt_egal, fontBig, CLR_MESSAGE, result_pos))
+            # elif players_array[:, 0:10].sum() == 0 and players_array[0, 10] == players_array[1, 10]:
+            #     pygame.draw.rect(screen, CLR_BOX, result_rect)
+            #     screen.blit(*text_blit(txt_egal, fontBig, CLR_MESSAGE, result_pos))
             # REFRESH ---------------------------------------------------------
             pygame.display.flip()
 pygame.quit()
