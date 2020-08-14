@@ -186,7 +186,7 @@ def validate_input(ci_event):
 # MAIN GAME LOOP
 # -----------------------------------------------------------------------------
 # TODO keep scrolling through letters while holding joystick up/down
-clock.tick(1)
+clock.tick(20)
 print("Game On!")
 pg.joystick.init()
 joystick = pg.joystick.Joystick(0)
