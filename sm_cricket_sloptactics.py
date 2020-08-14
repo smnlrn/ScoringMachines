@@ -47,6 +47,7 @@ CLR_ROUND = (255, 255, 255)
 CLR_PLAYER = (255, 255, 255)
 CLR_TOTAL = (255, 255, 255)
 CLR_UNDO = (255, 0, 0)
+CLR_INSTR = (0, 0, 0)
 
 # -----------------------------------------------------------------------------
 # VARIABLES
@@ -260,7 +261,7 @@ def init_score_board():
 def confirm_restart():
     pygame.draw.rect(screen, CLR_BOX, result_rect)
     screen.blit(*text_blit(txt_dem, fontBig, CLR_MESSAGE, result_pos))
-    screen.blit(*text_blit(txt_dem_info, fontInfo, CLR_TACTICS, result_pos_info))
+    screen.blit(*text_blit(txt_dem_info, fontInfo, CLR_INSTR, result_pos_info))
     pygame.display.flip()
     restart = True
     while restart:  # stay in loop as long as a MENU button is pressed
