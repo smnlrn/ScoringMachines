@@ -72,6 +72,10 @@ txt_1gagne = smp.txt_1gagne[lng]
 txt_2gagne = smp.txt_2gagne[lng]
 txt_dem = smp.txt_dem[lng]
 txt_dem_info = smp.txt_dem_info[lng]
+# todo - add to param file
+txt_inserer_piece = "INSEREZ UNE PIECE POUR JOUER"
+txt_temps = "Temps restant"
+tarif = 66
 
 # DYNAMIC SCORE SHEET CALCULATION ---------------------------------------------
 col_score = round(screen_width / 4)
@@ -163,9 +167,9 @@ def get_target_index(gti):
 
 def validate_input(ci_event):
     if ci_event.type == pygame.KEYUP:
-        if ci_event.key == pygame.K_SPACE:
+        if ci_event.key == pygame.K_s:
             return True, START, MENU
-        if ci_event.key == pygame.K_RETURN:
+        if ci_event.key == pygame.K_x:
             return True, SELECT, MENU
         if ci_event.key == pygame.K_UP:
             return True, UP, JOYSTICK
@@ -311,7 +315,7 @@ while game_on:
                 if seconds_left > 0:
                     seconds_left -= 1
             if valid_input and input_value == COIN:
-                seconds_left += 1800
+                seconds_left += tarif
             if seconds_left == 0:
                 valid_input = False
             # -----------------------------------------------------------------
@@ -417,8 +421,8 @@ while game_on:
             # -----------------------------------------------------------------
             # if valid_input:
             #     print("validate:", valid_input, input_value, input_type)
-            #if valid_input:
-            #     print(event)
+            # if valid_input:
+            # print(event)
             #     print(players_array)
             #     print(player_one_scores, player_two_scores)
             #     print("player:", current_player, sitting_player)
@@ -481,13 +485,17 @@ while game_on:
             # DISPLAY TIME LEFT -----------------------------------------------
             if seconds_left > 0:
                 if seconds_left < 60:
-                    screen.blit(*text_blit("temps restant: " + str(timedelta(seconds=seconds_left)),
-                                           fontInfo, CLR_MESSAGE, time_pos))
+                    screen.blit(*text_blit(txt_temps + ": " + str(timedelta(seconds=seconds_left)),
+                                           fontScoreHist, CLR_BOX, time_pos))
                 else:
-                    screen.blit(*text_blit("temps restant: " + str(timedelta(seconds=seconds_left)),
+                    screen.blit(*text_blit(txt_temps + ": " + str(timedelta(seconds=seconds_left)),
                                            fontInfo, CLR_TARGETS, time_pos))
             else:
-                screen.blit(*text_blit("INSERT COIN TO CONTINUE", fontInfo, CLR_TARGETS, time_pos))
+                # screen.blit(*text_blit(txt_inserer_piece, fontInfo, CLR_TARGETS, time_pos))
+                screen.blit(*text_blit(txt_temps + ": " + str(timedelta(seconds=seconds_left)),
+                                       fontInfo, CLR_MESSAGE, time_pos))
+                pygame.draw.rect(screen, CLR_BOX, result_rect)
+                screen.blit(*text_blit(txt_inserer_piece, fontScoreHist, CLR_MESSAGE, result_pos))
             # CHECK WINNER ----------------------------------------------------
             if players_array[0, 0:9].sum() == 0 and players_array[0, 9] >= players_array[1, 9]:
                 pygame.draw.rect(screen, CLR_BOX, result_rect)
